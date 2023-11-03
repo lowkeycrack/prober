@@ -58,7 +58,7 @@ def check(q):
                     print(f"{sub} : {GREEN}[{response.status_code}]{END} {BLUE}[{response.headers.get('server','N/A')}]{END}")
                 else:
                     print(f"{sub} {YELLOW}[{response.status_code}]{END} [{response.headers.get('server','N/A')}]")
-        except requests.exceptions.ConnectionError as e:
+        except:
             pass
             errors.append(f'{sub} [???] [ERROR]')
 
@@ -78,9 +78,11 @@ def start(filename,threads):
     for _ in range(threads):
         check_thread=threading.Thread(target=check, args=(q,))
         threads_check.append(check_thread)
-
-    for thread in threads_check:
-        thread.start()
+    try:
+        for thread in threads_check:
+            thread.start()
+    except KeyboardInterrupt:
+        print(GREEN+"[*] keyboard interrupt detected closing the program"+END)
 
 if __name__ == '__main__':
     print(banner)
