@@ -2,6 +2,7 @@ import requests
 import click
 from queue import Queue
 import threading
+from sys import exit
 
 BLACK = "\033[0;30m"
 RED = "\033[0;31m"
@@ -43,9 +44,9 @@ banner="""                              █████
 ░░░░░                                        
                                     Made by Krish Jha
                                     A tool for probing subdomains
-                                    Version 1.0
+                                    Version 1.1
             """
-def check(q):
+def check(q,subs):
     while not q.empty():
         sub=q.get()
         errors=[]
@@ -54,6 +55,7 @@ def check(q):
             if response.status_code == 404 :
                 pass
             else:
+                subs.append(sub)
                 if response.status_code == 200:
                     print(f"{sub} : {GREEN}[{response.status_code}]{END} {BLUE}[{response.headers.get('server','N/A')}]{END}")
                 else:
@@ -65,7 +67,8 @@ def check(q):
 @cli.command()
 @click.option('-f','--filename',help="The filename containing the list of subdomains")
 @click.option('-t','--threads',help='Threads to use (increases the speed of the scan) [default=10]',default=10)
-def start(filename,threads):
+@click.option('-o','--output',help="output file")
+def start(filename,threads,output):
     with open(filename, 'r') as s:
         subdomains= s.read().splitlines()
     
@@ -75,14 +78,23 @@ def start(filename,threads):
         q.put(sub)
     print(RED + BLINK+ BOLD+"                       press 'ctrl+c' when the probing has stopped"+ END)
     threads_check=[]
+    subs=[]
     for _ in range(threads):
-        check_thread=threading.Thread(target=check, args=(q,))
+        check_thread=threading.Thread(target=check, args=(q,subs))
         threads_check.append(check_thread)
     try:
         for thread in threads_check:
             thread.start()
+        for thread in threads_check:
+            thread.join()
     except KeyboardInterrupt:
-        print(GREEN+"[*] keyboard interrupt detected closing the program"+END)
+        print(RED+"[*] keyboard interrupt detected closing the program"+END)
+    if output:
+        print(GREEN+"Writing the output please wait for a min... "+END)
+        with open(output,'w') as openf:
+            for sub in subs:
+                openf.write(sub+"\n")
+            exit(0)
 
 if __name__ == '__main__':
     print(banner)
