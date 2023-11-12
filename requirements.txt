@@ -1,0 +1,11 @@
+Package            Version
+------------------ ---------
+certifi            2023.7.22
+charset-normalizer 3.3.2
+click              8.1.7
+idna               3.4
+pip                23.2
+requests           2.31.0
+setuptools         67.8.0
+urllib3            2.0.7
+wheel              0.38.4
